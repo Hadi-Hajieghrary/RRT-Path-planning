@@ -126,7 +126,7 @@ int main(int argc, char** argv) {
       }
     }
 
-    auto leafs = node_list->searchLeafs();
+    auto leafs = node_list->searchLeaves();
     for (auto node : leafs) {
       while (node->_parent != nullptr) {
         cv::line(world, cv::Point(node->_state.coordinates[0], node->_state.coordinates[1]),

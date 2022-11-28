@@ -1,13 +1,13 @@
 #include "KDTree.hpp"
 
 
-void KDTree::add(const NodePtr &node) {
+void KDTree::add(const std::shared_ptr<Node> &node) {
   if (node->_parent != nullptr) node->_parent->_is_leaf = false;
   _leaves.push_back(node);
 
   if (std::log2(_leaves.size()) * (1 / REBALANCE_RATIO) <= _depth) {
     // rebuild balanced kd-tree
-    recurciveClearOut(_root);
+    recursiveClearOut(_root);
     _root = nullptr;
     _depth = 0;
     std::vector<int> indices(_leaves.size());
@@ -20,7 +20,7 @@ void KDTree::add(const NodePtr &node) {
 }
 
 void KDTree::init() {
-  recurciveClearOut(_root);
+  recursiveClearOut(_root);
   _root = nullptr;
   _depth = 0;
   _leaves.clear();
@@ -28,17 +28,17 @@ void KDTree::init() {
 
 int KDTree::getSize() { return _leaves.size(); }
 
-KDTree::NodePtr KDTree::searchNN(const NodePtr &node) {
-  NodePtr ret_node;
+std::shared_ptr<Node> KDTree::searchNN(const std::shared_ptr<Node> &node) {
+  std::shared_ptr<Node> ret_node;
   auto min_dist = std::numeric_limits<double>::max();
 
-  recurciveSerachNearestNeighbor(node, _root, ret_node, min_dist);
+  recursiveSearchNearestNeighbor(node, _root, ret_node, min_dist);
   return ret_node;
 }
 
 
-std::vector<KDTree::NodePtr> KDTree::searchLeafs() {
-  std::vector<NodePtr> ret_nodes;
+std::vector<std::shared_ptr<Node>> KDTree::searchLeaves() {
+  std::vector<std::shared_ptr<Node>> ret_nodes;
   for (const auto &v : _leaves) {
     if (v->_is_leaf) {
       ret_nodes.push_back(v);
@@ -47,19 +47,19 @@ std::vector<KDTree::NodePtr> KDTree::searchLeafs() {
   return ret_nodes;
 }
 
-void KDTree::recurciveClearOut(const KDNodePtr &node) {
+void KDTree::recursiveClearOut(const std::shared_ptr<KDTreeNode> &node) {
   if (node == nullptr) return;
   if (node->_right_child) {
-    recurciveClearOut(node->_right_child);
+    recursiveClearOut(node->_right_child);
     node->_right_child = nullptr;
   }
   if (node->_left_child) {
-    recurciveClearOut(node->_left_child);
+    recursiveClearOut(node->_left_child);
     node->_left_child = nullptr;
   }
 }
 
-KDTree::KDNodePtr KDTree::recursiveBuild(std::vector<int> &indices, const int &offset, const int &npoints,
+std::shared_ptr<KDTreeNode> KDTree::recursiveBuild(std::vector<int> &indices, const int &offset, const int &npoints,
                                                    const int &depth) {
   if (npoints <= 0) {
     return nullptr;
@@ -81,7 +81,7 @@ KDTree::KDNodePtr KDTree::recursiveBuild(std::vector<int> &indices, const int &o
   return node;
 }
 
-KDTree::KDNodePtr KDTree::recursiveInsert(const KDNodePtr &root, const int &new_node_index,
+std::shared_ptr<KDTreeNode> KDTree::recursiveInsert(const std::shared_ptr<KDTreeNode> &root, const int &new_node_index,
                                                     const int &depth) {
   auto axis = depth % 2;
   if (root == nullptr) {
@@ -104,12 +104,12 @@ KDTree::KDNodePtr KDTree::recursiveInsert(const KDNodePtr &root, const int &new_
   }
 }
 
-void KDTree::recurciveSerachNearestNeighbor(const NodePtr &query, const KDNodePtr node, NodePtr &initial_guess, double &min_dist) const {
+void KDTree::recursiveSearchNearestNeighbor(const std::shared_ptr<Node> &query, const std::shared_ptr<KDTreeNode> node, std::shared_ptr<Node> &initial_guess, double &min_dist) const {
   if (node == nullptr) {
     return;
   }
 
-  const NodePtr &train = _leaves[node->_index];
+  const std::shared_ptr<Node> &train = _leaves[node->_index];
   const double dist = query->_state.distanceFrom(train->_state);
   if (dist < min_dist) {
     min_dist = dist;
@@ -118,9 +118,9 @@ void KDTree::recurciveSerachNearestNeighbor(const NodePtr &query, const KDNodePt
 
   const int axis = node->_axis;
   const int dir = query->_state.coordinates[axis] < train->_state.coordinates[axis] ? 0 : 1;
-  recurciveSerachNearestNeighbor(query, dir == 0 ? node->_right_child : node->_left_child, initial_guess, min_dist);
+  recursiveSearchNearestNeighbor(query, dir == 0 ? node->_right_child : node->_left_child, initial_guess, min_dist);
   const double diff = fabs(query->_state.coordinates[axis] - train->_state.coordinates[axis]);
   if (diff < min_dist) {
-    recurciveSerachNearestNeighbor(query, dir == 0 ? node->_left_child : node->_right_child, initial_guess, min_dist);
+    recursiveSearchNearestNeighbor(query, dir == 0 ? node->_left_child : node->_right_child, initial_guess, min_dist);
   }
 }

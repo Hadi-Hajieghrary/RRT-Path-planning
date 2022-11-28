@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(pathplanning)
+project(RRT-Path-planning)
 
 
 find_package(Eigen3 3.0.0 REQUIRED)

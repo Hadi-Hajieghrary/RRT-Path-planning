@@ -6,5 +6,5 @@ CXX_FLAGS =
 
 CXX_DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_PROGRAM_OPTIONS_DYN_LINK
 
-CXX_INCLUDES = -I/home/hadi/WorkSpace/cpp_ws/pathplanning/include -I/usr/include/eigen3 -isystem /usr/include/opencv4 
+CXX_INCLUDES = -I/home/hadi/WorkSpace/cpp_ws/RRT-Path-planning/include -I/usr/include/eigen3 -isystem /usr/include/opencv4 
 
